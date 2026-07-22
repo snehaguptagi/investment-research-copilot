@@ -28,7 +28,7 @@ These are differentiators that go past "summarize + link to holdings." Each one 
 
 **Why it is hard to fake.** A plain summarizer is reactive: it needs Y in the text. This is anticipatory: it walks a dependency graph from the named entity to a held one.
 
-**How it works.** Extends the entity linker's relationship expansion ([LLD §5](./LLD.md#5-entity-linking-the-moat)) one hop further along a directed dependency graph:
+**How it works.** Extends the entity linker's relationship expansion ([LLD §6](./LLD.md#6-entity-linking)) one hop further along a directed dependency graph:
 - **Corporate-structure hop (ready now):** subsidiary → parent, ADR → ordinary. Our dataset already carries these test cases, so bad news on a subsidiary can flag the held parent today.
 - **Supply-chain hop (gated):** X supplies N% of Y → flag Y. Requires a supply-chain relationship dataset.
 - **Historical read-through lag:** from the firm's own past notes and price history, estimate how many days similar past events at X took to show up in Y. Turns "Y is exposed" into "Y is exposed, and historically this took ~5 trading days to register."
@@ -47,7 +47,7 @@ These are differentiators that go past "summarize + link to holdings." Each one 
 
 **What it does.** Lets an analyst ask "what if this escalates" and runs the same NAV/sector math against 2–3 severity bands (e.g. downgrade → mild / moderate / severe), turning a static "here is what happened" into "here is the range of what could happen to my book."
 
-**Why it is feasible and cheap.** The roll-up engine ([LLD §8](./LLD.md#8-portfolio-roll-up-engine)) is already deterministic, so running it three times with different severity inputs costs almost nothing and stays fully auditable.
+**Why it is feasible and cheap.** The roll-up engine ([LLD §11](./LLD.md#11-portfolio-roll-up-engine)) is already deterministic, so running it three times with different severity inputs costs almost nothing and stays fully auditable.
 
 **How it works.** Each severity band is a labeled set of assumed moves applied to the affected holdings; the deterministic engine recomputes NAV impact per band. Where the firm's historical notes contain similar past events, the bands can be anchored to how those actually resolved, stated as observed precedent.
 
@@ -67,7 +67,7 @@ These are differentiators that go past "summarize + link to holdings." Each one 
 
 **Why it is unique.** No generic summarizer does this, because it requires the firm's own historical notes as ground truth. It is a personal consistency and accountability tool, not a news filter, which makes it sticky.
 
-**How it works.** Internal notes are already ingested ([PRD FR-01](./PRD.md#8-functional-requirements)) and entity-linked. Per held name, the LLM extracts the analyst's stated thesis claims from their notes; when a new entity-linked event arrives, a contradiction-detection pass compares the event against those prior claims. Both the prior claim and the contradicting evidence are surfaced with citations. The verifier pattern ([LLD §7](./LLD.md#7-llm-orchestration)) guards against hallucinated contradictions.
+**How it works.** Internal notes are already ingested ([PRD FR-01](./PRD.md#8-functional-requirements)) and entity-linked. Per held name, the LLM extracts the analyst's stated thesis claims from their notes; when a new entity-linked event arrives, a contradiction-detection pass compares the event against those prior claims. Both the prior claim and the contradicting evidence are surfaced with citations. The verifier pattern ([LLD §10](./LLD.md#10-llm-orchestration)) guards against hallucinated contradictions.
 
 **Data dependencies.** An **internal-notes corpus** (for the pilot, authored synthetically). No external licensed data.
 
@@ -85,7 +85,7 @@ These are differentiators that go past "summarize + link to holdings." Each one 
 
 **Why it is strategic.** It only exists because the system sees across the whole firm, not one book. That makes it the concrete argument for why the **CIO office (the actual buyer)** should sponsor this over a single desk, which directly answers an open question in the PRD.
 
-**How it works.** The multi-desk model is already first-class ([LLD §3](./LLD.md#3-data-model): `Desk`, `Portfolio`). Once a signal's per-portfolio direction is computed (the direction logic in the Market Insight Pipeline), cross-desk contradiction is an aggregation: group by event, detect sign-opposition across desks, rank by combined exposure. It reuses machinery that already exists, no new models.
+**How it works.** The multi-desk model is already first-class ([LLD §3](./LLD.md#3-data-model): `Desk`, `Portfolio`). Once a signal's per-portfolio direction is computed by the [direction engine](./LLD.md#7-direction-engine), cross-desk contradiction is an aggregation: group by signal, detect sign-opposition across desks, rank by combined exposure. It reuses machinery that already exists, no new models.
 
 **Demoable today with the 19 books.** Rates-down signal: *US Tech & Semis* reads tailwind (beta 1.17, growth reprices up), *Financials/banks* reads headwind (net-interest-margin compression). Same firm, same news, opposite exposure. Oil-up signal: *GCC & MENA* (Aramco-heavy) reads tailwind while a consumer/travel-tilted book reads headwind. Real contradictions from existing data, nothing fabricated.
 

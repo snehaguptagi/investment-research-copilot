@@ -13,12 +13,13 @@ The wedge: a generic tool tells you a company was downgraded. PRISM tells you th
 | Doc | Contents |
 |---|---|
 | [`docs/PRD.md`](docs/PRD.md) | Problem, personas, goals, success metrics, feature scope, requirements, compliance guardrails, risk register, roadmap |
-| [`docs/LLD.md`](docs/LLD.md) | System architecture, component design, data model, entity linking, retrieval/RAG, LLM orchestration, API surface, evaluation harness |
+| [`docs/LLD.md`](docs/LLD.md) | System architecture, the market-insight pipeline (data sourcing, signal construction, direction engine, ranking), the you-vs-a-normal-book comparison, API surface, evaluation harness |
 | [`docs/ADVANCED.md`](docs/ADVANCED.md) | Beyond-MVP differentiators: second-order read-through, scenario roll-up, thesis-drift detector, cross-desk contradiction flagging |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Visual design system: color, typography, layout, and components for the product surface |
 
 ## Status
 
-Early-stage scoping. PRD and LLD are drafted (v0.1). Prototype code (synthetic portfolio dataset, entity-linking spike, insight pipeline) lands in follow-up commits.
+Early-stage scoping. PRD, LLD, ADVANCED, and DESIGN are drafted (v0.2). Prototype code (synthetic 19-portfolio dataset, entity-linking spike, insight pipeline) lands in follow-up commits.
 
 ## Core design principles
 

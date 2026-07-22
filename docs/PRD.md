@@ -1,9 +1,9 @@
 # PRD — Investment Research & Portfolio Insight Copilot
 
 **Codename:** PRISM (Portfolio Research & Insight Synthesis)
-**Status:** Draft v0.1
+**Status:** Draft v0.2
 **Segment:** Asset management — AMCs, CIO office, research GCCs
-**Date:** 2026-07-20
+**Date:** 2026-07-22
 
 A portfolio-aware research assistant that turns the flood of broker reports, earnings transcripts, news, and internal notes into cited, book-specific insight, so analysts stop summarising and start deciding.
 
@@ -26,7 +26,7 @@ A portfolio-aware research assistant that turns the flood of broker reports, ear
 13. [Roadmap](#13-roadmap)
 14. [Open questions](#14-open-questions)
 
-See [`LLD.md`](./LLD.md) for system architecture, component design, data model, and the low-level engineering plan.
+See [`LLD.md`](./LLD.md) for system architecture, the market-insight pipeline, and the low-level engineering plan. See [`ADVANCED.md`](./ADVANCED.md) for beyond-MVP differentiators. See [`DESIGN.md`](./DESIGN.md) for the visual design system.
 
 ---
 
@@ -116,14 +116,20 @@ Cares about: multi-desk/multi-portfolio support, entitlements and access, repeat
 | Must | Grounded summarisation | Per-document and per-event, every claim cited |
 | Must | Holdings linkage | Insight to specific positions. The wedge. |
 | Must | Sector / exposure roll-up | "3 held names touched, 4.2% of NAV" |
+| Must | You-vs-a-normal-book comparison | The centerpiece lens: your exposure vs a reference 60/40 book, see [`LLD.md` §12](./LLD.md#12-portfolio-comparison--the-you-vs-a-normal-book-lens) |
+| Must | Direction (tailwind/headwind), not just linkage | Computed per holding via the sensitivity matrix, not article sentiment |
 | Must | Grounded analyst Q&A | Chat over the corpus with citations and filters |
 | Should | Personalised daily digest | Per-PM, scoped to their book |
 | Should | Material-event alerting | Push when news hits a held name above a threshold |
 | Should | Risk-position flagging | Concentration and factor-tilt shifts from an event |
 | Could | Thematic clustering | Auto-surface emerging cross-source themes |
 | Could | CIO oversight dashboard | Firm-wide event-to-exposure heatmap |
+| Could | Cross-desk contradiction flagging | CIO-level; see [`ADVANCED.md`](./ADVANCED.md) #4 |
+| Could | Scenario / counterfactual roll-up | Deterministic what-if; see [`ADVANCED.md`](./ADVANCED.md) #2 |
+| Could | Thesis-drift detector | Flags events contradicting an analyst's own prior notes; see [`ADVANCED.md`](./ADVANCED.md) #3 |
 | Won't (v1) | Trade execution / rebalancing | Explicit non-goal |
 | Won't (v1) | Alpha / price prediction | Out of scope and out of positioning |
+| Won't (v1) | Second-order supply-chain read-through | Gated on licensed data; see [`ADVANCED.md`](./ADVANCED.md) #1 |
 
 ## 7. Key user journeys
 
@@ -168,16 +174,18 @@ CIO office views the firm-wide heatmap of events against aggregate exposures, co
 
 ## 10. Data sources & licensing
 
-Data licensing, not the model, is the true commercial critical path. The MVP is deliberately built on defensible public sources; licensed sources are a parallel workstream, not a blocker.
+Data licensing, not the model, is the true commercial critical path. The MVP is deliberately built on structured, free-tier APIs, not scraping and not LLM-search-alone; licensed sources are a parallel workstream, not a blocker. Full architecture in [`LLD.md` §4](./LLD.md#4-market-data--news-architecture).
 
-| Source | MVP status | Notes |
-|---|---|---|
-| Earnings-call transcripts | Public subset | Publicly posted transcripts for the pilot; licensed feed for production |
-| Regulatory filings | Public | SEC EDGAR / exchange filings, freely usable |
-| News & market commentary | Licensed API | News API with clear redistribution terms |
-| Internal research notes | Tenant-supplied | Uploaded by the firm; never leaves the tenant |
-| Sell-side broker reports | Deferred | Paywalled/licensed. Production only, with entitlement checks. Do not use in MVP. |
-| Holdings & exposures | Tenant-supplied | From the firm's system of record; the linkage target |
+| Source | Provider(s) | MVP status | Notes |
+|---|---|---|---|
+| Ticker-tagged financial news | Finnhub (spine), Marketaux | Free tier | Finnhub ~60 calls/min; Marketaux 100/day, sentiment included |
+| Macro / political / global events | GDELT | Free | Covers the non-financial domains (policy, geopolitics) |
+| Regulatory filings | SEC EDGAR | Free, official | 10-K/8-K/13F/Form 4; primary-source depth |
+| Earnings-call transcripts | Public subset | Public | Publicly posted transcripts for the pilot; licensed feed for production |
+| Internal research notes | Tenant-supplied | — | Uploaded by the firm; never leaves the tenant; also the thesis-drift ground truth ([`ADVANCED.md`](./ADVANCED.md) #3) |
+| Sell-side broker reports | — | Deferred | Paywalled/licensed. Production only, with entitlement checks. Do not use in MVP. |
+| Supply-chain relationship data | e.g. Bloomberg SPLC, FactSet | Deferred | Gates the full second-order read-through ([`ADVANCED.md`](./ADVANCED.md) #1) |
+| Holdings & exposures | Tenant-supplied | — | From the firm's system of record; the linkage target |
 
 ## 11. Compliance & guardrails
 
@@ -192,13 +200,14 @@ Data licensing, not the model, is the true commercial critical path. The MVP is 
 
 | ID | Risk | Sev. | Mitigation |
 |---|---|---|---|
-| R-01 | Entity linking too inaccurate to trust; wrong holdings surfaced | High | Front-load a Phase-0 spike; hybrid symbolic + LLM resolver; show confidence; fail closed |
-| R-02 | Hallucinated or unsupported implications in a regulated setting | High | Mandatory citation grounding; claim-level verification; suppress ungrounded output |
-| R-03 | Broker-report licensing blocks production value | High | MVP on public sources; licensing as a parallel commercial workstream |
-| R-04 | Buyer sees it as "just another summariser" | Med | Lead every demo with the holdings-linkage wow-moment, not the summary |
+| R-01 | Entity linking too inaccurate to trust; wrong holdings surfaced | Med ↓ | Was High; downgraded because ticker-tagged news APIs (Finnhub/Marketaux) provide linkage as a structured field, not an LLM guess. Hybrid resolver + confidence + fail-closed remains for untagged sources. |
+| R-02 | Hallucinated or unsupported implications in a regulated setting | High | Mandatory citation grounding; claim-level verification; cross-check verifier pass; suppress ungrounded output |
+| R-03 | Broker-report licensing blocks production value | High | MVP on free structured APIs (Finnhub/Marketaux/GDELT/EDGAR); broker-report licensing as a parallel commercial workstream |
+| R-04 | Buyer sees it as "just another summariser" | Med | Lead every demo with the holdings-linkage and you-vs-a-normal-book comparison, not the summary |
 | R-05 | Adoption stalls; analysts distrust and revert | Med | Citations on every claim; pilot with a friendly desk; measure time saved |
 | R-06 | Data residency / security objections from IT | Med | Tenant isolation, no training on client data, configurable residency |
-| R-07 | Cost per query scales badly with corpus size | Low | Tiered models: cheap for bulk summarisation, top-tier for reasoning; caching |
+| R-07 | Cost per query scales badly with corpus size | Low | Tiered models: cheap for bulk summarisation, top-tier for reasoning; caching; free-tier APIs before paid |
+| R-08 | Direction inferred from article sentiment gives wrong read-through (e.g. oil-up read as bad for an oil producer) | High | Direction is never sentiment; it's computed by the deterministic sensitivity matrix over security attributes ([`LLD.md` §7](./LLD.md#7-direction-engine)) |
 
 ## 13. Roadmap
 
@@ -223,9 +232,10 @@ Digests, alerting, eval harness, entitlements + audit log, production-grade vect
 - Which asset class and region for the pilot book (US equities, India equities, multi-asset)? It shapes the securities master and news sources.
 - What is the firm's system of record for holdings, and how do we get a daily feed?
 - What is the acceptable latency/cost envelope per analyst per day?
-- Which licensed news provider has redistribution terms compatible with the product?
+- ~~Which licensed news provider has redistribution terms compatible with the product?~~ Resolved for MVP: Finnhub + Marketaux + GDELT + SEC EDGAR, all free-tier and attribution-compatible ([`LLD.md` §4](./LLD.md#4-market-data--news-architecture)). Still open for scale: which paid tier to move to, and whether a licensed broker-report feed is added.
 - What is the compliance line on surfacing internal research alongside external content?
-- Is the first buyer a single desk or the CIO office? It changes which oversight features move up the roadmap.
+- Is the first buyer a single desk or the CIO office? The cross-desk contradiction feature ([`ADVANCED.md`](./ADVANCED.md) #4) is a concrete argument for CIO sponsorship, but the decision is still open.
+- Should the cross-check verifier (§10 of the LLD) use a second LLM provider, or is a single-provider verifier pass sufficient for the pilot?
 
 ---
 
