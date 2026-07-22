@@ -22,11 +22,12 @@ The wedge: a generic tool tells you a company was downgraded. PRISM tells you th
 | Path | What's there |
 |---|---|
 | [`data/prism_data.json`](data/prism_data.json) | The 19-portfolio synthetic dataset: securities, holdings, computed risk, referenced throughout the docs |
-| [`pipeline/`](pipeline/) | The deterministic core — direction engine, roll-up, the you-vs-a-normal-book comparison, ranking, cross-desk contradiction detection. Runs today with zero API keys; see [`pipeline/README.md`](pipeline/README.md) |
+| [`pipeline/`](pipeline/) | The deterministic core in Python — direction engine, roll-up, the you-vs-a-normal-book comparison, ranking, cross-desk contradiction detection. Runs today with zero API keys; see [`pipeline/README.md`](pipeline/README.md) |
+| [`web/`](web/) | **v1 MVP** — the same engine ported to vanilla JS, with a real UI implementing `DESIGN.md`. Zero-build static site: run locally or deploy to Vercel in one command; see [`web/README.md`](web/README.md) |
 
 ## Status
 
-PRD, LLD, ADVANCED, and DESIGN are drafted (v0.2). The deterministic core (`pipeline/`) is built and tested against the real dataset. Next: the structured-API data layer (Finnhub/Marketaux/GDELT/EDGAR) and the LLM classification/narration layer on top of it.
+PRD, LLD, ADVANCED, and DESIGN are drafted (v0.2). The deterministic core is built, tested, and ported to a running web MVP (`web/`) with both the analyst ("My Book") and CIO ("Event Lens") views. Next: the structured-API data layer (Finnhub/Marketaux/GDELT/EDGAR) and the LLM classification/narration layer on top of it.
 
 ## Core design principles
 

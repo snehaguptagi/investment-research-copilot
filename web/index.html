@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRISM — Portfolio Insight Copilot</title>
+<meta name="description" content="Portfolio-aware market insight, compared against your own book.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">PRISM <b>·</b> INSIGHT COPILOT</div>
+    <div class="subtitle" id="asof"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="mybook">My Book</button>
+    <button class="tab" data-tab="eventlens">Event Lens (CIO view)</button>
+  </div>
+
+  <!-- ===================== TAB 1: MY BOOK ===================== -->
+  <section id="tab-mybook">
+    <div class="selector-row">
+      <span class="label">Portfolio</span>
+      <select id="portfolioSelect"></select>
+    </div>
+    <div id="myBookContent"></div>
+  </section>
+
+  <!-- ===================== TAB 2: EVENT LENS ===================== -->
+  <section id="tab-eventlens" style="display:none">
+    <div class="label" style="margin-bottom:10px">Market signal</div>
+    <div class="event-picker" id="eventPicker"></div>
+    <div id="eventLensContent"></div>
+  </section>
+
+  <footer>
+    Synthetic demo data. Decision-support tool — not investment advice, not a trading system.
+    Every exposure number is computed deterministically from the portfolio's actual holdings;
+    the LLM narration layer (not yet wired in this build) explains these numbers, it never
+    calculates them. See <code>docs/LLD.md</code> for the full design.
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="scenarios.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
