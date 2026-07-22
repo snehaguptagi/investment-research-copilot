@@ -14,6 +14,7 @@ The wedge: a generic tool tells you a company was downgraded. PRISM tells you th
 |---|---|
 | [`docs/PRD.md`](docs/PRD.md) | Problem, personas, goals, success metrics, feature scope, requirements, compliance guardrails, risk register, roadmap |
 | [`docs/LLD.md`](docs/LLD.md) | System architecture, component design, data model, entity linking, retrieval/RAG, LLM orchestration, API surface, evaluation harness |
+| [`docs/ADVANCED.md`](docs/ADVANCED.md) | Beyond-MVP differentiators: second-order read-through, scenario roll-up, thesis-drift detector, cross-desk contradiction flagging |
 
 ## Status
 
