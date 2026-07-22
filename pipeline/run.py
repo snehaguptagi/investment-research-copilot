@@ -78,8 +78,8 @@ def main():
         print(f"CROSS-DESK CONTRADICTIONS ({len(pairs)}): opposing exposure, same event")
         print("-" * 72)
         for t, h in pairs[:5]:
-            print(f"  + {t.portfolio_name}: TAILWIND {t.pct_nav_touched}%")
-            print(f"  - {h.portfolio_name}: HEADWIND {h.pct_nav_touched}%")
+            print(f"  + {t.portfolio_name}: TAILWIND {t.exposure_pct}%")
+            print(f"  - {h.portfolio_name}: HEADWIND {h.exposure_pct}%")
             print()
 
 
