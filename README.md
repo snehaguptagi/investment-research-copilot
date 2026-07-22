@@ -17,9 +17,16 @@ The wedge: a generic tool tells you a company was downgraded. PRISM tells you th
 | [`docs/ADVANCED.md`](docs/ADVANCED.md) | Beyond-MVP differentiators: second-order read-through, scenario roll-up, thesis-drift detector, cross-desk contradiction flagging |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Visual design system: color, typography, layout, and components for the product surface |
 
+## Code
+
+| Path | What's there |
+|---|---|
+| [`data/prism_data.json`](data/prism_data.json) | The 19-portfolio synthetic dataset: securities, holdings, computed risk, referenced throughout the docs |
+| [`pipeline/`](pipeline/) | The deterministic core — direction engine, roll-up, the you-vs-a-normal-book comparison, ranking, cross-desk contradiction detection. Runs today with zero API keys; see [`pipeline/README.md`](pipeline/README.md) |
+
 ## Status
 
-Early-stage scoping. PRD, LLD, ADVANCED, and DESIGN are drafted (v0.2). Prototype code (synthetic 19-portfolio dataset, entity-linking spike, insight pipeline) lands in follow-up commits.
+PRD, LLD, ADVANCED, and DESIGN are drafted (v0.2). The deterministic core (`pipeline/`) is built and tested against the real dataset. Next: the structured-API data layer (Finnhub/Marketaux/GDELT/EDGAR) and the LLM classification/narration layer on top of it.
 
 ## Core design principles
 
