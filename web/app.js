@@ -178,35 +178,91 @@ function renderMyBook(portfolioId) {
 }
 
 // ---------------------------------------------------------------- Event Lens tab
+function dirColor(direction) {
+  return direction === 'headwind' ? 'var(--headwind)' : direction === 'tailwind' ? 'var(--tailwind)' : 'var(--mixed)';
+}
+
+function rungHtml(impact) {
+  const color = dirColor(impact.direction);
+  const w = Math.max(impact.exposure_pct, 1);
+  const driver = book.portfolios[impact.portfolio_id].risk_driver;
+  return `
+    <button class="rung" data-pid="${impact.portfolio_id}" aria-expanded="false">
+      <div>
+        <div class="rung-name">${impact.portfolio_name}</div>
+        <div class="rung-driver">${driver}</div>
+      </div>
+      <div class="rail">
+        <i class="guide" style="left:25%"></i><i class="guide" style="left:50%"></i><i class="guide" style="left:75%"></i>
+        <div class="rail-fill" style="width:${w}%;background:${color}"></div>
+      </div>
+      <div class="rung-score">
+        <div class="v" style="color:${color}">${impact.exposure_pct}%</div>
+        <div class="chip" style="background:${color}">${DIR_LABEL[impact.direction]}</div>
+      </div>
+      <div class="rung-caret">&#9662;</div>
+    </button>
+    <div class="rung-detail" id="detail-${impact.portfolio_id}">
+      ${compareBarsHtml(impact)}
+      ${holdingsPreviewHtml(impact)}
+    </div>`;
+}
+
+function contraCardHtml(tail, head) {
+  return `
+    <div class="contra-card">
+      <div class="contra-side">
+        <span class="contra-tag tailwind">Tailwind</span>
+        <span class="contra-name">${tail.portfolio_name}</span>
+        <span class="contra-value tailwind">${tail.exposure_pct}%</span>
+      </div>
+      <div class="contra-vs">VS</div>
+      <div class="contra-side right">
+        <span class="contra-tag headwind">Headwind</span>
+        <span class="contra-name">${head.portfolio_name}</span>
+        <span class="contra-value headwind">${head.exposure_pct}%</span>
+      </div>
+    </div>`;
+}
+
 function renderEventLens(scenarioKey) {
   const event = PRISM_SCENARIOS[scenarioKey];
   const impacts = window.PrismEngine.analyzeEvent(book, event);
-  const maxScore = Math.max(...impacts.map(i => i.rank_score), 1);
-
-  const ladder = impacts.map(i => {
-    const color = i.direction === 'headwind' ? 'var(--headwind)' : i.direction === 'tailwind' ? 'var(--tailwind)' : 'var(--mixed)';
-    const w = (i.rank_score / maxScore) * 100;
-    return `
-      <div class="ladder-row">
-        <div class="ladder-name">${i.portfolio_name}</div>
-        <div class="ladder-rail"><div class="ladder-fill" style="width:${w}%;background:${color}"></div></div>
-        <div class="ladder-score" style="color:${color}">${DIR_LABEL[i.direction]} ${i.exposure_pct}%</div>
-      </div>`;
-  }).join('');
-
   const pairs = window.PrismEngine.crossDeskContradictions(impacts);
-  const contraHtml = pairs.slice(0, 5).map(([t, h]) => `
-    <div class="contra-pair">
-      <div class="contra-side" style="color:var(--tailwind)">+ ${t.portfolio_name}: TAILWIND ${t.exposure_pct}%</div>
-      <div class="contra-side" style="color:var(--headwind); text-align:right">${h.portfolio_name}: HEADWIND ${h.exposure_pct}% -</div>
-    </div>`).join('');
+  const attnCount = impacts.filter(i => i.needs_attention).length;
+
+  const summary = `
+    <div class="lens-summary">
+      <div class="lens-stat"><div class="v">${impacts.length} / ${Object.keys(book.portfolios).length}</div><div class="l">Portfolios touched</div></div>
+      <div class="lens-stat"><div class="v" style="color:var(--vhigh)">${attnCount}</div><div class="l">Need attention</div></div>
+      <div class="lens-stat"><div class="v">${pairs.length}</div><div class="l">Cross-desk contradictions</div></div>
+      <div class="lens-stat"><div class="v" style="font-size:13px">${book.portfolios[book.referenceId].name}</div><div class="l">Reference book</div></div>
+    </div>`;
+
+  const ladderHtml = impacts.length
+    ? `<div class="shead">Ranked by exposure, across the whole book</div><div class="ladder">${impacts.map(rungHtml).join('')}</div>`
+    : `<div class="verdict">No portfolios are touched by this signal.</div>`;
+
+  const contraHtml = pairs.length
+    ? `<div class="shead">Cross-desk contradictions (${pairs.length}) &mdash; CIO oversight, ADVANCED.md #4</div>
+       <div class="contra-grid">${pairs.slice(0, 5).map(([t, h]) => contraCardHtml(t, h)).join('')}</div>`
+    : '';
 
   document.getElementById('eventLensContent').innerHTML = `
-    <div class="verdict"><span class="k">Event</span>${event.subject} &middot; ${impacts.length} of ${Object.keys(book.portfolios).length} portfolios touched &middot; reference: ${book.portfolios[book.referenceId].name}</div>
-    <div class="shead">Ranked by exposure, across the whole book</div>
-    <div class="pf-header">${ladder}</div>
-    ${pairs.length ? `<div class="shead">Cross-desk contradictions (${pairs.length}) — CIO oversight, ADVANCED.md #4</div><div class="pf-header">${contraHtml}</div>` : ''}
+    <div class="verdict"><span class="k">Event</span>${event.subject}</div>
+    ${summary}
+    ${ladderHtml}
+    ${contraHtml}
   `;
+
+  document.querySelectorAll('.rung').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const detail = document.getElementById(`detail-${btn.dataset.pid}`);
+      const isOpen = detail.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+      btn.setAttribute('aria-expanded', String(isOpen));
+    });
+  });
 }
 
 // ---------------------------------------------------------------- init
